@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
+
+using mldeepdivelib.Common;
 
 using mlregression.Structures;
 
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
-using Microsoft.ML.Data;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Transforms.Normalizers;
 
@@ -21,7 +21,7 @@ namespace mlregression
             switch (args[0])
             {
                 case "build":
-                    TrainModel(mlContext, args[1], args[2]);
+                    TrainModel<EmploymentHistory>(mlContext, args[1], args[2]);
                     break;
                 case "predict":
                     Predict(mlContext, args[1], args[2]);
@@ -47,28 +47,17 @@ namespace mlregression
             Console.WriteLine($"Predicted Duration (in months): {resultprediction.DurationInMonths:0.#}");
         }
 
-        private static void TrainModel(MLContext mlContext, string trainDataPath, string modelPath) {
+        private static void TrainModel<T>(MLContext mlContext, string trainDataPath, string modelPath) {
             var textLoader = mlContext.Data.TextReader(new TextLoader.Arguments()
             {
                 Separator = ",",
                 HasHeader = false,
-                Column = new[]
-                {
-                    new TextLoader.Column("PositionName", DataKind.Text, 0),
-                    new TextLoader.Column("DurationInMonths", DataKind.R4, 1),
-                    new TextLoader.Column("IsMarried", DataKind.R4, 2),
-                    new TextLoader.Column("BSDegree", DataKind.R4, 3),
-                    new TextLoader.Column("MSDegree", DataKind.R4, 4),
-                    new TextLoader.Column("YearsExperience", DataKind.R4, 5),
-                    new TextLoader.Column("AgeAtHire", DataKind.R4, 6)
-                }
+                Column = Activator.CreateInstance<T>().ToColumns()
             });
-
+            
             var baseTrainingDataView = textLoader.Read(trainDataPath);
             
-            var cnt = baseTrainingDataView.GetColumn<float>(mlContext, "DurationInMonths").Count();
-            var trainingDataView = mlContext.Data.FilterByColumn(baseTrainingDataView, "DurationInMonths", lowerBound: 1, upperBound: 150);
-            var cnt2 = trainingDataView.GetColumn<float>(mlContext, "DurationInMonths").Count();
+            var trainingDataView = mlContext.Data.FilterByColumn(baseTrainingDataView, "DurationInMonths", 1, 150);
             
             var dataProcessPipeline = mlContext.Transforms.CopyColumns("DurationInMonths", "Label")
                             .Append(mlContext.Transforms.Categorical.OneHotEncoding("PositionName", "PositionNameEncoded"))
@@ -79,7 +68,7 @@ namespace mlregression
                             .Append(mlContext.Transforms.Normalize(inputName: "AgeAtHire", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                             .Append(mlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire"));
                                      
-            var trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent(labelColumn: "Label", featureColumn: "Features");
+            var trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent();
             var trainingPipeline = dataProcessPipeline.Append(trainer);
             
             var trainedModel = trainingPipeline.Fit(trainingDataView);
