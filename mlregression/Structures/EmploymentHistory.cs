@@ -6,7 +6,7 @@ namespace mlregression.Structures
     {
         public string PositionName { get; set; }
 
-        [Label(1, 150)]
+        [Label(0, 150)]
         public float DurationInMonths { get; set; }
 
         public float IsMarried { get; set; }
