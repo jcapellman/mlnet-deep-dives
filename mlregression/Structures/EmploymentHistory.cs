@@ -18,5 +18,7 @@ namespace mlregression.Structures
         public float YearsExperience { get; set; }
 
         public float AgeAtHire { get; set; }
+
+        public float HasKids { get; set; }
     }
 }

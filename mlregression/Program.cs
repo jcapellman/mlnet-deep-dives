@@ -18,6 +18,8 @@ namespace mlregression
         {
             var mlContext = new MLContext(seed: 0);
 
+            Console.Clear();
+
             switch (args[0])
             {
                 case "build":
@@ -34,7 +36,11 @@ namespace mlregression
 
         private static TK Predict<T, TK>(MLContext mlContext, string modelPath, string predictionFilePath) where T : class where TK : class, new()
         {
-            var predictionData = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(File.ReadAllText(predictionFilePath));
+            var data = File.ReadAllText(predictionFilePath);
+
+            var predictionData = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(data);
+
+            Console.WriteLine($"Data:{Environment.NewLine}{data}{Environment.NewLine}");
 
             ITransformer trainedModel;
 
@@ -73,7 +79,8 @@ namespace mlregression
                 .Append(mlContext.Transforms.Normalize(inputName: "MSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(mlContext.Transforms.Normalize(inputName: "YearsExperience", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(mlContext.Transforms.Normalize(inputName: "AgeAtHire", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(mlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire"));
+                .Append(mlContext.Transforms.Normalize(inputName: "HasKids", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(mlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire", "HasKids"));
             
             var trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent();
             var trainingPipeline = dataProcessPipeline.Append(trainer);
