@@ -7,7 +7,6 @@ using mlregression.Structures;
 
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
-using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Transforms.Normalizers;
 
 namespace mlregression
@@ -49,7 +48,7 @@ namespace mlregression
                 trainedModel = mlContext.Model.Load(stream);
             }
             
-            var predFunction = trainedModel.MakePredictionFunction<T, TK>(mlContext);
+            var predFunction = trainedModel.CreatePredictionEngine<T, TK>(mlContext);
 
             return predFunction.Predict(predictionData);
         }
@@ -57,16 +56,9 @@ namespace mlregression
         private static void TrainModel<T>(MLContext mlContext, string trainDataPath, string modelPath) {
             var modelObject = Activator.CreateInstance<T>();
 
-            var modelColumns = modelObject.ToColumns();
+            var textReader = mlContext.Data.CreateTextReader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
 
-            var textLoader = mlContext.Data.TextReader(new TextLoader.Arguments()
-            {
-                Separator = ",",
-                HasHeader = false,
-                Column = modelColumns
-            });
-            
-            var baseTrainingDataView = textLoader.Read(trainDataPath);
+            var baseTrainingDataView = textReader.Read(trainDataPath);
 
             var label = modelObject.GetLabelAttributes();
 
@@ -92,7 +84,7 @@ namespace mlregression
             {
                 trainedModel.SaveTo(mlContext, fs);
             }
-
+            
             Console.WriteLine($"Saved model to {modelPath}");
         }
     }

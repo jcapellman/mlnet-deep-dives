@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Reflection;
-
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Data;
 
 namespace mldeepdivelib.Common
 {
