@@ -20,5 +20,7 @@ namespace mlregression.Structures
         public float AgeAtHire { get; set; }
 
         public float HasKids { get; set; }
+
+        public float WithinMonthOfVesting { get; set; }
     }
 }
