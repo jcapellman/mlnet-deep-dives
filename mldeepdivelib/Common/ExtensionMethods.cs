@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Reflection;
+
 using Microsoft.ML.Data;
 
 namespace mldeepdivelib.Common
@@ -11,6 +12,13 @@ namespace mldeepdivelib.Common
             var fields = model.GetType().GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance);
 
             return fields.Select((t, x) => new TextLoader.Column(t.Name, t.PropertyType == typeof(string) ? DataKind.Text : DataKind.R4, x)).ToArray();
+        }
+
+        public static string[] ToColumnNames<T>(this T model)
+        {
+            var fields = model.GetType().GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance);
+
+            return fields.Select(a => a.Name).ToArray();
         }
 
         public static (string Name, int Min, int Max) GetLabelAttributes<T>(this T model)
