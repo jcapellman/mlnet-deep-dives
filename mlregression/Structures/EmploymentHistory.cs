@@ -24,5 +24,7 @@ namespace mlregression.Structures
         public float WithinMonthOfVesting { get; set; }
 
         public float DeskDecorations { get; set; }
+
+        public float LongCommute { get; set; }
     }
 }

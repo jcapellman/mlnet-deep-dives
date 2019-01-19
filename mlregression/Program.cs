@@ -74,8 +74,9 @@ namespace mlregression
                 .Append(mlContext.Transforms.Normalize(inputName: "HasKids", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(mlContext.Transforms.Normalize(inputName: "WithinMonthOfVesting", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(mlContext.Transforms.Normalize(inputName: "DeskDecorations", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(mlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire", "HasKids", "WithinMonthOfVesting", "DeskDecorations"));
-
+                .Append(mlContext.Transforms.Normalize(inputName: "LongCommute", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(mlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire", "HasKids", "WithinMonthOfVesting", "DeskDecorations", "LongCommute"));
+            
             var trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent();
             var trainingPipeline = dataProcessPipeline.Append(trainer);
             
