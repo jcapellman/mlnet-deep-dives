@@ -4,6 +4,7 @@ using System.IO;
 using Microsoft.ML;
 
 using mldeepdivelib.Common;
+using mldeepdivelib.Helpers;
 
 using ThreatClassifier.Structures;
 
@@ -21,6 +22,13 @@ namespace ThreatClassifier
             {
                 case "trainmodel":
                     TrainModel<ThreatInformation>(mlContext, args[1], args[2]);
+                    break;
+                case "predict":
+                    var prediction = Predictor.Predict<ThreatInformation, ThreatPredictor>(mlContext, args[1], args[2]);
+
+                    Console.WriteLine($"Cluster: {prediction.ThreatClusterId}");
+                    Console.WriteLine($"Distances: {string.Join(" ", prediction.Distances)}");
+
                     break;
             }
         }
