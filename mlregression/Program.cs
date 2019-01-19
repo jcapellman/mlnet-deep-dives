@@ -2,11 +2,11 @@
 using System.IO;
 
 using mldeepdivelib.Common;
+using mldeepdivelib.Helpers;
 
 using mlregression.Structures;
 
 using Microsoft.ML;
-using Microsoft.ML.Core.Data;
 using Microsoft.ML.Transforms.Normalizers;
 
 namespace mlregression
@@ -25,34 +25,14 @@ namespace mlregression
                     TrainModel<EmploymentHistory>(mlContext, args[1], args[2]);
                     break;
                 case "predict":
-                    var prediction = Predict<EmploymentHistory, EmploymentHistoryPrediction>(mlContext, args[1], args[2]);
+                    var prediction = Predictor.Predict<EmploymentHistory, EmploymentHistoryPrediction>(mlContext, args[1], args[2]);
 
                     Console.WriteLine($"Predicted Duration (in months): {prediction.DurationInMonths:0.#}");
 
                     break;
             }
         }
-
-        private static TK Predict<T, TK>(MLContext mlContext, string modelPath, string predictionFilePath) where T : class where TK : class, new()
-        {
-            var data = File.ReadAllText(predictionFilePath);
-
-            var predictionData = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(data);
-
-            Console.WriteLine($"Data:{Environment.NewLine}{data}{Environment.NewLine}");
-
-            ITransformer trainedModel;
-
-            using (var stream = new FileStream(modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                trainedModel = mlContext.Model.Load(stream);
-            }
-            
-            var predFunction = trainedModel.CreatePredictionEngine<T, TK>(mlContext);
-
-            return predFunction.Predict(predictionData);
-        }
-
+        
         private static void TrainModel<T>(MLContext mlContext, string trainDataPath, string modelPath) {
             var modelObject = Activator.CreateInstance<T>();
 
