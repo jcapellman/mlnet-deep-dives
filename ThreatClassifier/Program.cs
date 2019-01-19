@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-
+using System.Linq;
+using System.Text;
 using Microsoft.ML;
 
 using mldeepdivelib.Common;
@@ -30,7 +31,45 @@ namespace ThreatClassifier
                     Console.WriteLine($"Distances: {string.Join(" ", prediction.Distances)}");
 
                     break;
+                case "fextraction":
+                    FeatureExtract(args[1], args[2]);
+                    break;
             }
+        }
+
+        private static void FeatureExtract(string rawDataFolder, string outputFile)
+        {
+            var startDate = DateTime.Now;
+
+            var files = Directory.GetFiles(rawDataFolder);
+
+            var sb = new StringBuilder();
+
+            foreach (var filePath in files)
+            {
+               var peFile = new PeNet.PeFile(filePath);
+                
+               var imports = peFile.ImageResourceDirectory.NumberOfIdEntries;
+               var sizeOfData = peFile.ImageSectionHeaders.FirstOrDefault()?.SizeOfRawData;
+
+               string classification;
+
+               switch (filePath)
+               {
+                    case var fileClass when filePath.Contains("trojan"):
+                        classification = "trojan";
+                        break;
+                    default:
+                        classification = "unknown";
+                        break;
+               }
+
+               sb.AppendLine($"{classification},{imports},{sizeOfData}");
+            }
+
+            File.WriteAllText(outputFile, sb.ToString());
+
+            Console.WriteLine($"Feature Extraction completed in {DateTime.Now.Subtract(startDate).TotalMinutes} minutes to {outputFile}");
         }
 
         private static void TrainModel<T>(MLContext mlContext, string trainDataPath, string modelPath)
