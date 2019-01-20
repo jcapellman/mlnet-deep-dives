@@ -139,7 +139,9 @@ namespace ThreatClassifier
             
             var pipeline = mlContext.Transforms
                 .Concatenate(Constants.FEATURE_COLUMN_NAME, modelObject.ToColumnNames())
-                .Append(mlContext.Clustering.Trainers.KMeans(Constants.FEATURE_COLUMN_NAME, clustersCount: 3));
+                .Append(mlContext.Clustering.Trainers.KMeans(
+                Constants.FEATURE_COLUMN_NAME, 
+                        clustersCount: Enum.GetNames(typeof(ThreatTypes)).Length));
 
             var trainedModel = pipeline.Fit(dataView);
 
