@@ -6,7 +6,7 @@ using Microsoft.ML;
 
 using mldeepdivelib.Common;
 using mldeepdivelib.Helpers;
-
+using ThreatClassifier.Common;
 using ThreatClassifier.Structures;
 
 namespace ThreatClassifier
@@ -32,12 +32,12 @@ namespace ThreatClassifier
 
                     break;
                 case "fextraction":
-                    FeatureExtract(args[1], args[2]);
+                    FeatureExtraction(args[1], args[2]);
                     break;
             }
         }
 
-        private static void FeatureExtract(string rawDataFolder, string outputFile)
+        private static void FeatureExtraction(string rawDataFolder, string outputFile)
         {
             var startDate = DateTime.Now;
 
@@ -52,19 +52,24 @@ namespace ThreatClassifier
                var imports = peFile.ImageResourceDirectory.NumberOfIdEntries;
                var sizeOfData = peFile.ImageSectionHeaders.FirstOrDefault()?.SizeOfRawData;
 
-               string classification;
+               var threatClassification = string.Empty;
 
-               switch (filePath)
+               foreach (var name in Enum.GetNames(typeof(ThreatTypes)))
                {
-                    case var fileClass when filePath.Contains("trojan"):
-                        classification = "trojan";
-                        break;
-                    default:
-                        classification = "unknown";
-                        break;
+                   if (!filePath.Contains(name))
+                   {
+                       continue;
+                   }
+
+                   threatClassification = name;
                }
 
-               sb.AppendLine($"{classification},{imports},{sizeOfData}");
+               if (string.IsNullOrEmpty(threatClassification))
+               {
+                   continue;                   
+               }
+
+               sb.AppendLine($"{threatClassification},{imports},{sizeOfData}");
             }
 
             File.WriteAllText(outputFile, sb.ToString());
