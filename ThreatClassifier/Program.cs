@@ -62,6 +62,36 @@ namespace ThreatClassifier
             }
         }
 
+        private static ThreatInformation FeatureExtractFile(string filePath)
+        {
+            var peFile = new PeNet.PeFile(filePath);
+
+            var information = new ThreatInformation
+            {
+                NumberImports = peFile.ImageResourceDirectory.NumberOfIdEntries,
+                DataSizeInBytes = peFile.ImageSectionHeaders.FirstOrDefault()?.SizeOfRawData ?? 0.0f
+            };
+            
+            foreach (var name in Enum.GetNames(typeof(ThreatTypes)))
+            {
+                if (!filePath.Contains(name))
+                {
+                    continue;
+                }
+
+                information.Classification = name;
+            }
+
+            if (!string.IsNullOrEmpty(information.Classification))
+            {
+                return information;
+            }
+
+            Console.WriteLine($"{filePath} was not named properly");
+
+            return null;
+        }
+
         private static void FeatureExtraction(string rawDataFolder, string outputFile)
         {
             var startDate = DateTime.Now;
@@ -72,31 +102,14 @@ namespace ThreatClassifier
 
             foreach (var filePath in files)
             {
-               var peFile = new PeNet.PeFile(filePath);
-                
-               var imports = peFile.ImageResourceDirectory.NumberOfIdEntries;
-               var sizeOfData = peFile.ImageSectionHeaders.FirstOrDefault()?.SizeOfRawData;
+                var extraction = FeatureExtractFile(filePath);
 
-               var threatClassification = string.Empty;
+                if (extraction == null)
+                {
+                    continue;
+                }
 
-               foreach (var name in Enum.GetNames(typeof(ThreatTypes)))
-               {
-                   if (!filePath.Contains(name))
-                   {
-                       continue;
-                   }
-
-                   threatClassification = name;
-               }
-
-               if (string.IsNullOrEmpty(threatClassification))
-               {
-                   Console.WriteLine($"{filePath} was not named properly");
-
-                   continue;                   
-               }
-
-               sb.AppendLine($"{threatClassification},{imports},{sizeOfData}");
+               sb.AppendLine(extraction.ToString());
             }
 
             File.WriteAllText(outputFile, sb.ToString());
