@@ -26,6 +26,10 @@ namespace ThreatClassifier
             {
                 Console.WriteLine($"{args[0]} is an invalid argument");
 
+                Console.WriteLine("Available Options:");
+
+                Console.WriteLine(string.Join(", ", Enum.GetNames(typeof(MLOperations))));
+
                 return; 
             }
 
@@ -60,7 +64,7 @@ namespace ThreatClassifier
 
             Console.WriteLine($"Threat Type: {threatType}");
             
-            Console.WriteLine("Distances:");
+            Console.WriteLine("Category Breakdown:");
 
             for (var x = 0; x < prediction.Distances.Length; x++)
             {
@@ -73,7 +77,7 @@ namespace ThreatClassifier
         private static ThreatInformation FeatureExtractFile(string filePath, bool forPrediction = false)
         {
             var peFile = new PeNet.PeFile(filePath);
-
+            
             var information = new ThreatInformation
             {
                 NumberImports = peFile.ImageResourceDirectory.NumberOfIdEntries,
@@ -105,7 +109,7 @@ namespace ThreatClassifier
             var startDate = DateTime.Now;
 
             var files = Directory.GetFiles(rawDataFolder);
-
+            
             var sb = new StringBuilder();
 
             foreach (var filePath in files)
