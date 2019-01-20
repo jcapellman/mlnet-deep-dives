@@ -35,7 +35,16 @@ namespace ThreatClassifier
                     TrainModel<ThreatInformation>(mlContext, args[1], args[2]);
                     break;
                 case MLOperations.predict:
-                    var prediction = Predictor.Predict<ThreatInformation, ThreatPredictor>(mlContext, args[1], args[2]);
+                    var extraction = FeatureExtractFile(args[2], true);
+
+                    if (extraction == null)
+                    {
+                        return;
+                    }
+
+                    Console.WriteLine($"Predicting on {args[2]}:");
+
+                    var prediction = Predictor.Predict<ThreatInformation, ThreatPredictor>(mlContext, args[1], extraction);
 
                     PrettyPrintResult(prediction);
                     break;
@@ -47,22 +56,21 @@ namespace ThreatClassifier
 
         private static void PrettyPrintResult(ThreatPredictor prediction)
         {
-            var threatType = (ThreatTypes) (prediction.ThreatClusterId + 1);
+            var threatType = (ThreatTypes)prediction.ThreatClusterId;
 
             Console.WriteLine($"Threat Type: {threatType}");
-            Console.WriteLine($"Cluster: {prediction.ThreatClusterId}");
-
+            
             Console.WriteLine("Distances:");
 
-            for (var x = 0; x <= prediction.Distances.Length; x++)
+            for (var x = 0; x < prediction.Distances.Length; x++)
             {
-                threatType = (ThreatTypes)(x + 1);
+                threatType = (ThreatTypes)x;
 
                 Console.WriteLine($"{threatType} - {prediction.Distances[x]}%");
             }
         }
 
-        private static ThreatInformation FeatureExtractFile(string filePath)
+        private static ThreatInformation FeatureExtractFile(string filePath, bool forPrediction = false)
         {
             var peFile = new PeNet.PeFile(filePath);
 
@@ -82,7 +90,7 @@ namespace ThreatClassifier
                 information.Classification = name;
             }
 
-            if (!string.IsNullOrEmpty(information.Classification))
+            if (!string.IsNullOrEmpty(information.Classification) || forPrediction)
             {
                 return information;
             }
