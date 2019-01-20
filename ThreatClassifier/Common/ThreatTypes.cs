@@ -3,11 +3,7 @@
     public enum ThreatTypes
     {
         PUA,
-        TROJAN,
-        WORM,
-        BACKDOOR,
-        RANSOM,
-        ROOTKIT,
+        TROJAN,        
         VIRUS
     }
 }

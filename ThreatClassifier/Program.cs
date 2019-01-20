@@ -2,10 +2,13 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+
 using Microsoft.ML;
 
 using mldeepdivelib.Common;
+using mldeepdivelib.Enums;
 using mldeepdivelib.Helpers;
+
 using ThreatClassifier.Common;
 using ThreatClassifier.Structures;
 
@@ -19,21 +22,43 @@ namespace ThreatClassifier
 
             Console.Clear();
 
-            switch (args[0])
+            if (!Enum.TryParse(typeof(MLOperations), args[0], out var mlOperation))
             {
-                case "trainmodel":
+                Console.WriteLine($"{args[0]} is an invalid argument");
+
+                return; 
+            }
+
+            switch (mlOperation)
+            {
+                case MLOperations.train:
                     TrainModel<ThreatInformation>(mlContext, args[1], args[2]);
                     break;
-                case "predict":
+                case MLOperations.predict:
                     var prediction = Predictor.Predict<ThreatInformation, ThreatPredictor>(mlContext, args[1], args[2]);
 
-                    Console.WriteLine($"Cluster: {prediction.ThreatClusterId}");
-                    Console.WriteLine($"Distances: {string.Join(" ", prediction.Distances)}");
-
+                    PrettyPrintResult(prediction);
                     break;
-                case "fextraction":
+                case MLOperations.featureextraction:
                     FeatureExtraction(args[1], args[2]);
                     break;
+            }
+        }
+
+        private static void PrettyPrintResult(ThreatPredictor prediction)
+        {
+            var threatType = (ThreatTypes) (prediction.ThreatClusterId + 1);
+
+            Console.WriteLine($"Threat Type: {threatType}");
+            Console.WriteLine($"Cluster: {prediction.ThreatClusterId}");
+
+            Console.WriteLine("Distances:");
+
+            for (var x = 0; x <= prediction.Distances.Length; x++)
+            {
+                threatType = (ThreatTypes)(x + 1);
+
+                Console.WriteLine($"{threatType} - {prediction.Distances[x]}%");
             }
         }
 
@@ -66,6 +91,8 @@ namespace ThreatClassifier
 
                if (string.IsNullOrEmpty(threatClassification))
                {
+                   Console.WriteLine($"{filePath} was not named properly");
+
                    continue;                   
                }
 
