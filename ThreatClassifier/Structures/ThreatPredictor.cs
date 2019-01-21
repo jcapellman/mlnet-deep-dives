@@ -1,12 +1,10 @@
 ﻿using Microsoft.ML.Data;
 
-using mldeepdivelib.Common;
-
 namespace ThreatClassifier.Structures
 {
     public class ThreatPredictor
     {
-        [Label(0, 150)]
+        [ColumnName("PredictedLabel")]
         public uint ThreatClusterId { get; set; }
 
         [ColumnName("Score")]
