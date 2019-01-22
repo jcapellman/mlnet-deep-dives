@@ -15,26 +15,21 @@ namespace mlbinaryclassifier
     {
         protected override void Train(string[] args)
         {
-            var modelObject = Activator.CreateInstance<BCData>();
-
             var textReader = MlContext.Data.CreateTextReader(new TextLoader.Arguments
             {
                 Separator = ",",
                 HasHeader = false,
                 Column = new[]
                 {
-                    new TextLoader.Column("StillThere", DataKind.R4, 0),
-                    new TextLoader.Column("LongCommute", DataKind.R4, 1),
-                    new TextLoader.Column("PromotionLimited", DataKind.R4, 2),
-                    new TextLoader.Column("Overwhelmed", DataKind.R4, 3),
-                    new TextLoader.Column("Label", DataKind.Text, 4)
+                    new TextLoader.Column("Label", DataKind.Bool, 0),
+                    new TextLoader.Column("Content", DataKind.Text, 1)
                 }
             });
 
             var baseTrainingDataView = textReader.Read(args[1]);
 
-            var pipeline = MlContext.Transforms.Concatenate("Features", "StillThere", "LongCommute", "PromotionLimited", "Overwhelmed")
-                .Append(MlContext.BinaryClassification.Trainers.FastTree(numLeaves: 50, numTrees: 50, minDatapointsInLeaves: 5));
+            var pipeline = MlContext.Transforms.Text.FeaturizeText("Content", "Features")
+                .Append(MlContext.BinaryClassification.Trainers.FastTree(numLeaves: 2, numTrees: 10, minDatapointsInLeaves: 1));
 
             var trainedModel = pipeline.Fit(baseTrainingDataView);
 
@@ -50,7 +45,7 @@ namespace mlbinaryclassifier
         {
             var prediction = Predictor.Predict<BCData, BCPrediction>(MlContext, args[1], args[2]);
 
-            Console.WriteLine($"% Likely going to stay: {prediction.Probability:0.#}");
+            Console.WriteLine($"Likely not happy: {prediction.Probability * 100:##.#}%");
         }
 
         protected override void FeatureExtraction(string[] args)
