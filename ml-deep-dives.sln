@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mldeepdivelib", "mldeepdive
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThreatClassifier", "ThreatClassifier\ThreatClassifier.csproj", "{2BC0AA7E-36EE-4390-9727-9D5141D11959}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mlbinaryclassifier", "mlbinaryclassifier\mlbinaryclassifier.csproj", "{D655333B-B6C4-4C6F-9BD3-7F5C5800EAE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mlbinaryclassifier", "mlbinaryclassifier\mlbinaryclassifier.csproj", "{D655333B-B6C4-4C6F-9BD3-7F5C5800EAE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mljpegartifactdetector", "mljpegartifactdetector\mljpegartifactdetector.csproj", "{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,14 @@ Global
 		{D655333B-B6C4-4C6F-9BD3-7F5C5800EAE9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D655333B-B6C4-4C6F-9BD3-7F5C5800EAE9}.Release|x64.ActiveCfg = Release|Any CPU
 		{D655333B-B6C4-4C6F-9BD3-7F5C5800EAE9}.Release|x64.Build.0 = Release|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Debug|x64.Build.0 = Debug|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Release|x64.ActiveCfg = Release|Any CPU
+		{E571C02B-B64D-4C1F-BE3A-7103BCA501E3}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
