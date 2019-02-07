@@ -18,7 +18,7 @@ namespace mlregression
         {
             var modelObject = Activator.CreateInstance<EmploymentHistory>();
 
-            var textReader = MlContext.Data.CreateTextReader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
+            var textReader = MlContext.Data.CreateTextLoader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
 
             var baseTrainingDataView = textReader.Read(args[1]);
 
@@ -30,13 +30,13 @@ namespace mlregression
                 .Append(MlContext.Transforms.Categorical.OneHotEncoding("PositionName", "PositionNameEncoded"))
                 .Append(MlContext.Transforms.Normalize("IsMarried", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(MlContext.Transforms.Normalize("BSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize(inputName: "MSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize(inputName: "YearsExperience", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize(inputName: "AgeAtHire", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize(inputName: "HasKids", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize(inputName: "WithinMonthOfVesting", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize(inputName: "DeskDecorations", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize(inputName: "LongCommute", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(MlContext.Transforms.Normalize("MSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(MlContext.Transforms.Normalize("YearsExperience", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(MlContext.Transforms.Normalize("AgeAtHire", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(MlContext.Transforms.Normalize("HasKids", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(MlContext.Transforms.Normalize("WithinMonthOfVesting", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(MlContext.Transforms.Normalize("DeskDecorations", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
+                .Append(MlContext.Transforms.Normalize("LongCommute", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(MlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire", "HasKids", "WithinMonthOfVesting", "DeskDecorations", "LongCommute"));
 
             var trainer = MlContext.Regression.Trainers.StochasticDualCoordinateAscent();

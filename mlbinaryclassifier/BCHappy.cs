@@ -15,9 +15,8 @@ namespace mlbinaryclassifier
     {
         protected override void Train(string[] args)
         {
-            var textReader = MlContext.Data.CreateTextReader(new TextLoader.Arguments
+            var textReader = MlContext.Data.CreateTextLoader(new TextLoader.Arguments
             {
-                Separator = ",",
                 HasHeader = false,
                 Column = new[]
                 {

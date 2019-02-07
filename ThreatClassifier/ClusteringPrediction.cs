@@ -20,7 +20,7 @@ namespace ThreatClassifier
         {
             var modelObject = Activator.CreateInstance<ThreatInformation>();
 
-            var textReader = MlContext.Data.CreateTextReader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
+            var textReader = MlContext.Data.CreateTextLoader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
 
             var dataView = textReader.Read(args[1]);
 
