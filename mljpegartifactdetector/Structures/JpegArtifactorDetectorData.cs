@@ -1,14 +1,13 @@
-﻿using mldeepdivelib.Common;
+﻿using Microsoft.ML.Data;
 
 namespace mljpegartifactdetector.Structures
 {
     public class JpegArtifactorDetectorData
     {
-        [Label(int.MinValue, int.MaxValue)]
+        [LoadColumn(0)]
         public float ContainsJpegArtifacts { get; set; }
 
-        public byte[] Data { get; set; }
-
-        public override string ToString() => $"0.0f, {System.Text.Encoding.UTF8.GetString(Data)}";
+        [LoadColumn(1)]
+        public string Data { get; set; }
     }
 }

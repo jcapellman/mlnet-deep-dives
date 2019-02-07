@@ -42,21 +42,11 @@ namespace mljpegartifactdetector
         
         protected override void Train(string[] args)
         {
-            var modelObject = Activator.CreateInstance<JpegArtifactorDetectorData>();
+            var trainingDataView = MlContext.Data.ReadFromTextFile<JpegArtifactorDetectorData>(args[1], hasHeader: true);
+            
+            var dataProcessPipeline = MlContext.Transforms.Concatenate("Features", "Data").AppendCacheCheckpoint(MlContext);
 
-            var textReader = MlContext.Data.CreateTextLoader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
-
-            var baseTrainingDataView = textReader.Read(args[1]);
-
-            var label = modelObject.GetLabelAttributes();
-
-            var trainingDataView = MlContext.Data.FilterByColumn(baseTrainingDataView, label.Name, label.Min, label.Max);
-
-            var dataProcessPipeline = MlContext.Transforms.CopyColumns(label.Name, "Label")
-                .Append(MlContext.Transforms.Normalize("Data", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Concatenate("Features", "Data"));
-
-            var trainer = MlContext.Regression.Trainers.StochasticDualCoordinateAscent();
+            var trainer = MlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn: "Label", featureColumn: "Features");
             var trainingPipeline = dataProcessPipeline.Append(trainer);
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);
@@ -79,7 +69,7 @@ namespace mljpegartifactdetector
         private JpegArtifactorDetectorData FeatureExtractFile(string filePath, bool forPrediction = false) =>
             new JpegArtifactorDetectorData
             {
-                Data = File.ReadAllBytes(filePath)
+                Data = System.Text.Encoding.UTF8.GetString(File.ReadAllBytes(filePath))
             };
     }
 }
