@@ -3,17 +3,15 @@ using System.IO;
 using System.Text;
 
 using mldeepdivelib.Abstractions;
-using mldeepdivelib.Common;
 using mldeepdivelib.Helpers;
 
 using mljpegartifactdetector.Structures;
 
 using Microsoft.ML;
-using Microsoft.ML.Transforms.Normalizers;
 
 namespace mljpegartifactdetector
 {
-    public class jpegdetector : BaseMLPrediction
+    public class JpegArtifactDetector : BaseMLPrediction
     {
         protected override void FeatureExtraction(string[] args)
         {
