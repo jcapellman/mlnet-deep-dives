@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 using mldeepdivelib.Abstractions;
+using mldeepdivelib.Enums;
 using mldeepdivelib.Helpers;
 
 using mljpegartifactdetector.Structures;
@@ -21,7 +21,7 @@ namespace mljpegartifactdetector
         {
             var startDate = DateTime.Now;
 
-            var files = Directory.GetFiles(args[1]);
+            var files = Directory.GetFiles(args[(int)CommandLineArguments.INPUT_FILE]);
 
             var sb = new StringBuilder();
 
@@ -37,14 +37,14 @@ namespace mljpegartifactdetector
                 sb.AppendLine(extraction.ToString());
             }
 
-            File.WriteAllText(args[2], sb.ToString());
+            File.WriteAllText(args[(int)CommandLineArguments.OUTPUT_FILE], sb.ToString());
 
-            Console.WriteLine($"Feature Extraction completed in {DateTime.Now.Subtract(startDate).TotalMinutes} minutes to {args[2]}");
+            Console.WriteLine($"Feature Extraction completed in {DateTime.Now.Subtract(startDate).TotalMinutes} minutes to {args[(int)CommandLineArguments.OUTPUT_FILE]}");
         }
         
         protected override void Train(string[] args)
         {
-            var trainingDataView = MlContext.Data.ReadFromTextFile<JpegArtifactorDetectorData>(args[1], hasHeader: false, separatorChar: ',');
+            var trainingDataView = MlContext.Data.ReadFromTextFile<JpegArtifactorDetectorData>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: false, separatorChar: ',');
 
             var dataProcessPipeline = MlContext.Transforms.Conversion.MapValueToKey(
                     outputColumnName: DefaultColumnNames.Label,
@@ -58,24 +58,24 @@ namespace mljpegartifactdetector
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);
 
-            using (var fs = File.Create(args[2]))
+            using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
                 trainedModel.SaveTo(MlContext, fs);
             }
 
-            Console.WriteLine($"Saved model to {args[2]}");
+            Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");
         }
 
         protected override void Predict(string[] args)
         {
-            var prediction = Predictor.Predict<JpegArtifactorDetectorData, JpegArtifactorDetectorPrediction>(MlContext, args[1], args[2]);
+            var prediction = Predictor.Predict<JpegArtifactorDetectorData, JpegArtifactorDetectorPrediction>(MlContext, args[(int)CommandLineArguments.INPUT_FILE], args[(int)CommandLineArguments.OUTPUT_FILE]);
 
             Console.WriteLine($"Has Jpeg Artifacts: {prediction.ContainsJpegArtifacts:0.#}");
         }
 
         private JpegArtifactorDetectorData FeatureExtractFile(string filePath, bool forPrediction = false)
         {
-            using (var image = new Bitmap(System.Drawing.Image.FromFile(filePath)))
+            using (var image = new Bitmap(Image.FromFile(filePath)))
             {
                 var data = new List<int>();
 
