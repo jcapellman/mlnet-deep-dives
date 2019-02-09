@@ -3,6 +3,7 @@ using System.IO;
 
 using mldeepdivelib.Abstractions;
 using mldeepdivelib.Common;
+using mldeepdivelib.Enums;
 using mldeepdivelib.Helpers;
 
 using mlregression.Structures;
@@ -20,13 +21,13 @@ namespace mlregression
 
             var textReader = MlContext.Data.CreateTextLoader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
 
-            var baseTrainingDataView = textReader.Read(args[1]);
+            var baseTrainingDataView = textReader.Read(args[(int)CommandLineArguments.INPUT_FILE]);
 
-            var label = modelObject.GetLabelAttributes();
+            var (name, min, max) = modelObject.GetLabelAttributes();
 
-            var trainingDataView = MlContext.Data.FilterByColumn(baseTrainingDataView, label.Name, label.Min, label.Max);
+            var trainingDataView = MlContext.Data.FilterByColumn(baseTrainingDataView, name, min, max);
 
-            var dataProcessPipeline = MlContext.Transforms.CopyColumns(label.Name, "Label")
+            var dataProcessPipeline = MlContext.Transforms.CopyColumns(name, "Label")
                 .Append(MlContext.Transforms.Categorical.OneHotEncoding("PositionName", "PositionNameEncoded"))
                 .Append(MlContext.Transforms.Normalize("IsMarried", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(MlContext.Transforms.Normalize("BSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
@@ -44,24 +45,19 @@ namespace mlregression
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);
 
-            using (var fs = File.Create(args[2]))
+            using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
                 trainedModel.SaveTo(MlContext, fs);
             }
 
-            Console.WriteLine($"Saved model to {args[2]}");
+            Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");
         }
 
         protected override void Predict(string[] args)
         {
-            var prediction = Predictor.Predict<EmploymentHistory, EmploymentHistoryPrediction>(MlContext, args[1], args[2]);
+            var prediction = Predictor.Predict<EmploymentHistory, EmploymentHistoryPrediction>(MlContext, args[(int)CommandLineArguments.INPUT_FILE], args[(int)CommandLineArguments.OUTPUT_FILE]);
 
             Console.WriteLine($"Predicted Duration (in months): {prediction.DurationInMonths:0.#}");
-        }
-
-        protected override void FeatureExtraction(string[] args)
-        {
-            throw new NotImplementedException();
         }
     }
 }
