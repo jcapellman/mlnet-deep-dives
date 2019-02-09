@@ -7,7 +7,9 @@ namespace mljpegartifactdetector.Structures
         [LoadColumn(0)]
         public float ContainsJpegArtifacts { get; set; }
 
-        [LoadColumn(1)]
-        public string Data { get; set; }
+        [Column("Data")]
+        public int[] Data { get; set; }
+
+        public override string ToString() => $"{ContainsJpegArtifacts}, {string.Join("\t", Data)}";
     }
 }

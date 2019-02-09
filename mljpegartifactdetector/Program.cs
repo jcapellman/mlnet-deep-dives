@@ -1,11 +1,10 @@
-﻿
-namespace mljpegartifactdetector
+﻿namespace mljpegartifactdetector
 {
     class Program
     {
         static void Main(string[] args)
         {
-            new jpegdetector().Run(args);
+            new JpegArtifactDetector().Run(args);
         }
     }
 }

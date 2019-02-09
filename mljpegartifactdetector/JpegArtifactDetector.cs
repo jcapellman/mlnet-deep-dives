@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using mldeepdivelib.Abstractions;
@@ -8,6 +11,7 @@ using mldeepdivelib.Helpers;
 using mljpegartifactdetector.Structures;
 
 using Microsoft.ML;
+using Microsoft.ML.Data;
 
 namespace mljpegartifactdetector
 {
@@ -40,11 +44,16 @@ namespace mljpegartifactdetector
         
         protected override void Train(string[] args)
         {
-            var trainingDataView = MlContext.Data.ReadFromTextFile<JpegArtifactorDetectorData>(args[1], hasHeader: true);
-            
-            var dataProcessPipeline = MlContext.Transforms.Concatenate("Features", "Data").AppendCacheCheckpoint(MlContext);
+            var trainingDataView = MlContext.Data.ReadFromTextFile<JpegArtifactorDetectorData>(args[1], hasHeader: false, separatorChar: ',');
 
-            var trainer = MlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn: "Label", featureColumn: "Features");
+            var dataProcessPipeline = MlContext.Transforms.Conversion.MapValueToKey(
+                    outputColumnName: DefaultColumnNames.Label,
+                    inputColumnName: nameof(JpegArtifactorDetectorData.ContainsJpegArtifacts))
+                .Append(MlContext.Transforms.Text.FeaturizeText(outputColumnName: "DataFeaturized",
+                    inputColumnName: nameof(JpegArtifactorDetectorData.Data)))
+                .Append(MlContext.Transforms.Concatenate(DefaultColumnNames.Features,"DataFeaturized"));
+            
+            var trainer = MlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn: "Label", featureColumn: "Data");
             var trainingPipeline = dataProcessPipeline.Append(trainer);
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);
@@ -64,10 +73,25 @@ namespace mljpegartifactdetector
             Console.WriteLine($"Has Jpeg Artifacts: {prediction.ContainsJpegArtifacts:0.#}");
         }
 
-        private JpegArtifactorDetectorData FeatureExtractFile(string filePath, bool forPrediction = false) =>
-            new JpegArtifactorDetectorData
+        private JpegArtifactorDetectorData FeatureExtractFile(string filePath, bool forPrediction = false)
+        {
+            using (var image = new Bitmap(System.Drawing.Image.FromFile(filePath)))
             {
-                Data = System.Text.Encoding.UTF8.GetString(File.ReadAllBytes(filePath))
-            };
+                var data = new List<int>();
+
+                for (var x = 0; x < image.Width; x++)
+                {
+                    for (var y = 0; y < image.Height; y++)
+                    {
+                        data.Add(image.GetPixel(x, y).ToArgb());
+                    }
+                }
+                
+                return new JpegArtifactorDetectorData
+                {
+                    Data = data.ToArray()
+                };
+            }
+        }
     }
 }
