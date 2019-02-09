@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+
 using mldeepdivelib.Common;
 using mldeepdivelib.Enums;
 
@@ -20,7 +20,10 @@ namespace mldeepdivelib.Abstractions
 
         protected abstract void Predict(string[] args);
 
-        protected abstract void FeatureExtraction(string[] args);
+        protected virtual void FeatureExtraction(string[] args)
+        {
+            Console.WriteLine("Feature Extraction not implemented");
+        }
 
         private CommandLineResponse parseCommandLine(string[] args)
         {
@@ -32,9 +35,9 @@ namespace mldeepdivelib.Abstractions
                 return new CommandLineResponse {Success = false};
             }
 
-            if (!Enum.TryParse(typeof(MLOperations), args[0], out var mlOperation))
+            if (!Enum.TryParse(typeof(MLOperations), args[(int)CommandLineArguments.OPERATION], out var mlOperation))
             {
-                Console.WriteLine($"{args[0]} is an invalid argument");
+                Console.WriteLine($"{args[(int)CommandLineArguments.OPERATION]} is an invalid argument");
 
                 Console.WriteLine("Available Options:");
 
@@ -43,18 +46,18 @@ namespace mldeepdivelib.Abstractions
                 return new CommandLineResponse { Success = false };
             }
 
-            if (args.Length < 3)
+            if (args.Length >= 3)
             {
-                Console.WriteLine("Each Operation requires 2 additional arguments");
-                
-                return new CommandLineResponse { Success = false };
+                return new CommandLineResponse
+                {
+                    Success = true,
+                    MLOperation = (MLOperations) mlOperation
+                };
             }
 
-            return new CommandLineResponse
-            {
-                Success = true,
-                MLOperation = (MLOperations) mlOperation
-            };
+            Console.WriteLine("Each Operation requires 2 additional arguments");
+                
+            return new CommandLineResponse { Success = false };
         }
 
         public void Run(string[] args)
