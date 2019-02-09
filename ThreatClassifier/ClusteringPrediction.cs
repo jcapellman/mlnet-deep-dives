@@ -5,6 +5,7 @@ using System.Text;
 
 using mldeepdivelib.Abstractions;
 using mldeepdivelib.Common;
+using mldeepdivelib.Enums;
 using mldeepdivelib.Helpers;
 
 using Microsoft.ML;
@@ -22,7 +23,7 @@ namespace ThreatClassifier
 
             var textReader = MlContext.Data.CreateTextLoader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
 
-            var dataView = textReader.Read(args[1]);
+            var dataView = textReader.Read(args[(int)CommandLineArguments.INPUT_FILE]);
 
             var pipeline = MlContext.Transforms
                 .Concatenate(Constants.FEATURE_COLUMN_NAME, modelObject.ToColumnNames())
@@ -32,26 +33,26 @@ namespace ThreatClassifier
 
             var trainedModel = pipeline.Fit(dataView);
 
-            using (var fs = File.Create(args[2]))
+            using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
                 trainedModel.SaveTo(MlContext, fs);
             }
 
-            Console.WriteLine($"Saved model to {args[2]}");
+            Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");
         }
 
         protected override void Predict(string[] args)
         {
-            var extraction = FeatureExtractFile(args[2], true);
+            var extraction = FeatureExtractFile(args[(int)CommandLineArguments.OUTPUT_FILE], true);
 
             if (extraction == null)
             {
                 return;
             }
 
-            Console.WriteLine($"Predicting on {args[2]}:");
+            Console.WriteLine($"Predicting on {args[(int)CommandLineArguments.OUTPUT_FILE]}:");
 
-            var prediction = Predictor.Predict<ThreatInformation, ThreatPredictor>(MlContext, args[1], extraction);
+            var prediction = Predictor.Predict<ThreatInformation, ThreatPredictor>(MlContext, args[(int)CommandLineArguments.INPUT_FILE], extraction);
 
             PrettyPrintResult(prediction);
         }
@@ -60,7 +61,7 @@ namespace ThreatClassifier
         {
             var startDate = DateTime.Now;
 
-            var files = Directory.GetFiles(args[1]);
+            var files = Directory.GetFiles(args[(int)CommandLineArguments.INPUT_FILE]);
 
             var sb = new StringBuilder();
 
@@ -76,7 +77,7 @@ namespace ThreatClassifier
                 sb.AppendLine(extraction.ToString());
             }
 
-            File.WriteAllText(args[2], sb.ToString());
+            File.WriteAllText(args[(int)CommandLineArguments.OUTPUT_FILE], sb.ToString());
 
             Console.WriteLine($"Feature Extraction completed in {DateTime.Now.Subtract(startDate).TotalMinutes} minutes to {args[2]}");
         }
