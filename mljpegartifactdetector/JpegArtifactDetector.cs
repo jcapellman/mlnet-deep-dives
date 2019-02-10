@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Text;
 
@@ -44,6 +42,7 @@ namespace mljpegartifactdetector
         
         protected override void Train(string[] args)
         {
+            
             var trainingDataView = MlContext.Data.ReadFromTextFile<JpegArtifactorDetectorData>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: false, separatorChar: ',');
 
             var dataProcessPipeline = MlContext.Transforms.Conversion.MapValueToKey(
@@ -75,23 +74,10 @@ namespace mljpegartifactdetector
 
         private JpegArtifactorDetectorData FeatureExtractFile(string filePath, bool forPrediction = false)
         {
-            using (var image = new Bitmap(Image.FromFile(filePath)))
+            return new JpegArtifactorDetectorData
             {
-                var data = new List<int>();
-
-                for (var x = 0; x < image.Width; x++)
-                {
-                    for (var y = 0; y < image.Height; y++)
-                    {
-                        data.Add(image.GetPixel(x, y).ToArgb());
-                    }
-                }
-                
-                return new JpegArtifactorDetectorData
-                {
-                    Data = data.ToArray()
-                };
-            }
+                FilePath = filePath
+            };
         }
     }
 }
