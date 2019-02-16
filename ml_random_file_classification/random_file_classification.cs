@@ -3,6 +3,7 @@ using System.IO;
 
 using mldeepdivelib.Abstractions;
 using mldeepdivelib.Enums;
+using mldeepdivelib.Helpers;
 
 using ml_random_file_classification.Structures;
 
@@ -34,7 +35,16 @@ namespace ml_random_file_classification
 
         protected override void Predict(string[] args)
         {
-            throw new NotImplementedException();
+            var predictionData = new FileData
+            {
+                Strings = File.ReadAllBytes(args[(int)CommandLineArguments.INPUT_FILE]).ToString()
+            };
+
+            var prediction = Predictor.Predict<FileData, FilePrediction>(MlContext, args[(int)CommandLineArguments.OUTPUT_FILE], predictionData);
+
+            var verdict = prediction.Prediction ? "Positive" : "Negative";
+
+            Console.WriteLine($"{args[(int)CommandLineArguments.INPUT_FILE]} is predicted to be {verdict} | {prediction.Probability}");
         }
     }
 }
