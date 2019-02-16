@@ -1,10 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 using mldeepdivelib.Abstractions;
 using mldeepdivelib.Enums;
 using mldeepdivelib.Helpers;
-
+    
 using ml_random_file_classification.Structures;
 
 using Microsoft.ML;
@@ -16,7 +17,7 @@ namespace ml_random_file_classification
     {
         protected override void Train(string[] args)
         {
-            var data = MlContext.Data.ReadFromBinary(path: args[(int)CommandLineArguments.INPUT_FILE]);
+            var data = MlContext.Data.ReadFromTextFile<FileData>(path: args[(int)CommandLineArguments.INPUT_FILE]);
 
             var pipeline = MlContext.Transforms.Text.FeaturizeText(DefaultColumnNames.Features, nameof(FileData.Strings));
 
@@ -37,14 +38,50 @@ namespace ml_random_file_classification
         {
             var predictionData = new FileData
             {
-                Strings = File.ReadAllBytes(args[(int)CommandLineArguments.INPUT_FILE]).ToString()
+                Strings = File.ReadAllBytes(args[(int) CommandLineArguments.INPUT_FILE]).ToString()
             };
 
-            var prediction = Predictor.Predict<FileData, FilePrediction>(MlContext, args[(int)CommandLineArguments.OUTPUT_FILE], predictionData);
+            var prediction = Predictor.Predict<FileData, FilePrediction>(MlContext,
+                args[(int) CommandLineArguments.OUTPUT_FILE], predictionData);
 
             var verdict = prediction.Prediction ? "Positive" : "Negative";
 
-            Console.WriteLine($"{args[(int)CommandLineArguments.INPUT_FILE]} is predicted to be {verdict} | {prediction.Probability}");
+            Console.WriteLine(
+                $"{args[(int) CommandLineArguments.INPUT_FILE]} is predicted to be {verdict} | {prediction.Probability}");
+        }
+
+        protected override void FeatureExtraction(string[] args)
+        {
+            var startDate = DateTime.Now;
+
+            var files = Directory.GetFiles(args[(int)CommandLineArguments.INPUT_FILE]);
+
+            var sb = new StringBuilder();
+
+            foreach (var filePath in files)
+            {
+                var extraction = FeatureExtractFile(filePath);
+
+                if (extraction == null)
+                {
+                    continue;
+                }
+
+                sb.AppendLine(extraction.ToString());
+            }
+
+            File.WriteAllText(args[(int)CommandLineArguments.OUTPUT_FILE], sb.ToString());
+
+            Console.WriteLine($"Feature Extraction completed in {DateTime.Now.Subtract(startDate).TotalMinutes} minutes to {args[(int)CommandLineArguments.OUTPUT_FILE]}");
+        }
+
+        private FileData FeatureExtractFile(string filePath)
+        {
+            var fileData = new FileData();
+
+            Memory<byte> data = File.ReadAllBytes(filePath);
+
+            return fileData;
         }
     }
 }
