@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using mldeepdivelib.Abstractions;
 using mldeepdivelib.Enums;
@@ -80,6 +82,10 @@ namespace ml_random_file_classification
             var fileData = new FileData();
 
             Memory<byte> data = File.ReadAllBytes(filePath);
+
+            var regex = new Regex("\\w{4,}", RegexOptions.Compiled);
+
+            fileData.Strings = string.Join(",", regex.Matches(data.ToString()).Select(a => a.Value));
 
             return fileData;
         }
