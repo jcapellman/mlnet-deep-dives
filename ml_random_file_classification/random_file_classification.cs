@@ -53,7 +53,7 @@ namespace ml_random_file_classification
         protected override void FeatureExtraction(string[] args)
         {
             var startDate = DateTime.Now;
-
+            
             var files = Directory.GetFiles(args[(int)CommandLineArguments.INPUT_FILE]);
 
             var sb = new StringBuilder();
