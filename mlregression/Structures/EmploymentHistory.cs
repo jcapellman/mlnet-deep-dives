@@ -1,11 +1,14 @@
 ﻿using mldeepdivelib.Common;
 
+using Microsoft.ML.Data;
+
 namespace mlregression.Structures
 {
     public class EmploymentHistory
     {
         public string PositionName { get; set; }
 
+        [Column(ordinal: "0", name: "Label")]
         [Label(0, 150)]
         public float DurationInMonths { get; set; }
 

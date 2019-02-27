@@ -50,7 +50,7 @@ namespace mlregression
 
             var dataWithPredictions = trainedModel.Transform(testDataView);
 
-            var metrics = MlContext.BinaryClassification.Evaluate(dataWithPredictions, label: nameof(EmploymentHistory.DurationInMonths));
+            var metrics = MlContext.BinaryClassification.Evaluate(dataWithPredictions, predictedLabel: nameof(EmploymentHistoryPrediction.DurationInMonths));
 
             Console.WriteLine($"Accuracy: {metrics.Accuracy}");
             Console.WriteLine($"AUC: {metrics.Auc}");
