@@ -25,10 +25,13 @@ namespace mlregression
 
             var (name, min, max) = modelObject.GetLabelAttributes();
 
-            var trainingDataView = MlContext.Data.FilterByColumn(baseTrainingDataView, name, min, max);
+            var (trainData, testData) = MlContext.BinaryClassification.TrainTestSplit(baseTrainingDataView, testFraction: 0.1);
 
-            var dataProcessPipeline = MlContext.Transforms.CopyColumns(name, "Label")
-                .Append(MlContext.Transforms.Categorical.OneHotEncoding("PositionName", "PositionNameEncoded"))
+            var trainingDataView = MlContext.Data.FilterByColumn(trainData, name, min, max);
+            var testDataView = MlContext.Data.FilterByColumn(testData, name, min, max);
+
+            var dataProcessPipeline = MlContext.Transforms.CopyColumns("Label", name)
+                .Append(MlContext.Transforms.Categorical.OneHotEncoding("PositionNameEncoded", "PositionName"))
                 .Append(MlContext.Transforms.Normalize("IsMarried", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(MlContext.Transforms.Normalize("BSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
                 .Append(MlContext.Transforms.Normalize("MSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
@@ -44,6 +47,19 @@ namespace mlregression
             var trainingPipeline = dataProcessPipeline.Append(trainer);
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);
+
+            var dataWithPredictions = trainedModel.Transform(testDataView);
+
+            var metrics = MlContext.BinaryClassification.Evaluate(dataWithPredictions, predictedLabel: nameof(EmploymentHistoryPrediction.DurationInMonths));
+
+            Console.WriteLine($"Accuracy: {metrics.Accuracy}");
+            Console.WriteLine($"AUC: {metrics.Auc}");
+            Console.WriteLine($"F1 Score: {metrics.F1Score}");
+
+            Console.WriteLine($"Negative Precision: {metrics.NegativePrecision}");
+            Console.WriteLine($"Negative Recall: {metrics.NegativeRecall}");
+            Console.WriteLine($"Positive Precision: {metrics.PositivePrecision}");
+            Console.WriteLine($"Positive Recall: {metrics.PositiveRecall}");
 
             using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {

@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mljpegartifactdetector", "m
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mlgoodreviewsentimentanalysis", "mlgoodreviewsentimentanalysis\mlgoodreviewsentimentanalysis.csproj", "{6D1F6F46-52DE-476B-AC11-77A15A31F982}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ml_random_file_classification", "ml_random_file_classification\ml_random_file_classification.csproj", "{D6FC4D29-2A35-40D9-94C6-E20A8F101BA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ml_random_file_classification", "ml_random_file_classification\ml_random_file_classification.csproj", "{D6FC4D29-2A35-40D9-94C6-E20A8F101BA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

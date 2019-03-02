@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="0.10.0" />
-    <PackageReference Include="PeNet" Version="0.8.2" />
+    <PackageReference Include="PeNet" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
