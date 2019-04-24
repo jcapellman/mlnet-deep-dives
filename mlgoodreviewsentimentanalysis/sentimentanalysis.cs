@@ -16,7 +16,7 @@ namespace mlgoodreviewsentimentanalysis
     {
         protected override void Train(string[] args)
         {
-            var trainingDataView = MlContext.Data.ReadFromTextFile<SentimentData>(args[(int)CommandLineArguments.INPUT_FILE]);
+            var trainingDataView = MlContext.Data.LoadFromTextFile<SentimentData>(args[(int)CommandLineArguments.INPUT_FILE]);
             
             var pipeline = MlContext.Transforms.Text.FeaturizeText(DefaultColumnNames.Features, nameof(SentimentData.Text));
 

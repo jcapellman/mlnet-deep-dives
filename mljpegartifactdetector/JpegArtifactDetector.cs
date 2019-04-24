@@ -42,9 +42,8 @@ namespace mljpegartifactdetector
         
         protected override void Train(string[] args)
         {
+            var trainingDataView = MlContext.Data.LoadFromTextFile<JpegArtifactorDetectorData>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: true);
             
-            var trainingDataView = MlContext.Data.ReadFromTextFile<JpegArtifactorDetectorData>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: false, separatorChar: ',');
-
             var dataProcessPipeline = MlContext.Transforms.Conversion.MapValueToKey(
                     outputColumnName: DefaultColumnNames.Label,
                     inputColumnName: nameof(JpegArtifactorDetectorData.ContainsJpegArtifacts))
@@ -52,7 +51,7 @@ namespace mljpegartifactdetector
                     inputColumnName: nameof(JpegArtifactorDetectorData.Data)))
                 .Append(MlContext.Transforms.Concatenate(DefaultColumnNames.Features,"DataFeaturized"));
             
-            var trainer = MlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn: "Label", featureColumn: "Data");
+            var trainer = MlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumnName: "Label", featureColumnName: "Data");
             var trainingPipeline = dataProcessPipeline.Append(trainer);
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);

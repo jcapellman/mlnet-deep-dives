@@ -8,26 +8,15 @@ using mldeepdivelib.Enums;
 using mldeepdivelib.Helpers;
 
 using Microsoft.ML;
-using Microsoft.ML.Data;
-
+    
 namespace mlbinaryclassifier
 {
     public class BCAttrition : BaseMLPrediction
     {
         protected override void Train(string[] args)
         {
-            var textReader = MlContext.Data.CreateTextLoader(new TextLoader.Arguments
-            {
-                HasHeader = false,
-                Column = new[]
-                {
-                    new TextLoader.Column("Label", DataKind.Bool, 0),
-                    new TextLoader.Column("Content", DataKind.Text, 1)
-                }
-            });
-
-            var baseTrainingDataView = textReader.Read(args[(int)CommandLineArguments.INPUT_FILE]);
-
+            var baseTrainingDataView = MlContext.Data.LoadFromTextFile<BCData>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: true, separatorChar: ';');
+           
             var pipeline = MlContext.Transforms.Text.FeaturizeText("Content", "Features")
                 .Append(MlContext.BinaryClassification.Trainers.FastTree(numLeaves: 2, numTrees: 10, minDatapointsInLeaves: 1));
 

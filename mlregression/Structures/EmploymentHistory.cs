@@ -1,6 +1,4 @@
-﻿using mldeepdivelib.Common;
-
-using Microsoft.ML.Data;
+﻿using Microsoft.ML.Data;
 
 namespace mlregression.Structures
 {
@@ -8,8 +6,7 @@ namespace mlregression.Structures
     {
         public string PositionName { get; set; }
 
-        [Column(ordinal: "0", name: "Label")]
-        [Label(0, 150)]
+        [ColumnName("PredictedLabel")]
         public float DurationInMonths { get; set; }
 
         public float IsMarried { get; set; }

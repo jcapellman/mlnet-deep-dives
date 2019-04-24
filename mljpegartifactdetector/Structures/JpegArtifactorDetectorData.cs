@@ -10,7 +10,7 @@ namespace mljpegartifactdetector.Structures
         [LoadColumn(1)]
         public string FilePath { get; set; }
 
-        [Column("Data")]
+        [LoadColumn(2)]
         public int[] Data { get; set; }
     }
 }

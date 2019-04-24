@@ -19,7 +19,7 @@ namespace ml_random_file_classification
     {
         protected override void Train(string[] args)
         {
-            var data = MlContext.Data.ReadFromTextFile<FileData>(path: args[(int)CommandLineArguments.INPUT_FILE]);
+            var data = MlContext.Data.LoadFromTextFile<FileData>(path: args[(int)CommandLineArguments.INPUT_FILE]);
 
             var pipeline = MlContext.Transforms.Text.FeaturizeText(DefaultColumnNames.Features, nameof(FileData.Strings));
 

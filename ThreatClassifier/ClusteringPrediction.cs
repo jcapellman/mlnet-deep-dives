@@ -21,9 +21,7 @@ namespace ThreatClassifier
         {
             var modelObject = Activator.CreateInstance<ThreatInformation>();
 
-            var textReader = MlContext.Data.CreateTextLoader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
-
-            var dataView = textReader.Read(args[(int)CommandLineArguments.INPUT_FILE]);
+            var dataView = MlContext.Data.LoadFromTextFile<ThreatInformation>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: false, separatorChar: ',');
 
             var pipeline = MlContext.Transforms
                 .Concatenate(Constants.FEATURE_COLUMN_NAME, modelObject.ToColumnNames())

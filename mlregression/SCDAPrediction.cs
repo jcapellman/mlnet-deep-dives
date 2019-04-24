@@ -9,7 +9,7 @@ using mldeepdivelib.Helpers;
 using mlregression.Structures;
 
 using Microsoft.ML;
-using Microsoft.ML.Transforms.Normalizers;
+using Microsoft.ML.Transforms;
 
 namespace mlregression
 {
@@ -19,16 +19,11 @@ namespace mlregression
         {
             var modelObject = Activator.CreateInstance<EmploymentHistory>();
 
-            var textReader = MlContext.Data.CreateTextLoader(columns: modelObject.ToColumns(), hasHeader: false, separatorChar: ',');
-
-            var baseTrainingDataView = textReader.Read(args[(int)CommandLineArguments.INPUT_FILE]);
-
+            var trainingDataView = MlContext.Data.LoadFromTextFile<EmploymentHistory>(args[(int) CommandLineArguments.INPUT_FILE]);
+            
             var (name, min, max) = modelObject.GetLabelAttributes();
 
-            var (trainData, testData) = MlContext.BinaryClassification.TrainTestSplit(baseTrainingDataView, testFraction: 0.1);
-
-            var trainingDataView = MlContext.Data.FilterByColumn(trainData, name, min, max);
-            var testDataView = MlContext.Data.FilterByColumn(testData, name, min, max);
+            var testDataView = MlContext.BinaryClassification.TrainTestSplit(trainingDataView, testFraction: 0.1);
 
             var dataProcessPipeline = MlContext.Transforms.CopyColumns("Label", name)
                 .Append(MlContext.Transforms.Categorical.OneHotEncoding("PositionNameEncoded", "PositionName"))
@@ -48,7 +43,7 @@ namespace mlregression
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);
 
-            var dataWithPredictions = trainedModel.Transform(testDataView);
+            var dataWithPredictions = trainedModel.Transform(testDataView.TestSet);
 
             var metrics = MlContext.BinaryClassification.Evaluate(dataWithPredictions, predictedLabel: nameof(EmploymentHistoryPrediction.DurationInMonths));
 

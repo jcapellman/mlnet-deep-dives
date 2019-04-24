@@ -1,8 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 using Microsoft.ML;
-using Microsoft.ML.Core.Data;
 
 namespace mldeepdivelib.Helpers
 {

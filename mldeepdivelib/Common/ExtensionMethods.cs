@@ -11,7 +11,7 @@ namespace mldeepdivelib.Common
         {
             var fields = model.GetType().GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance);
 
-            return fields.Select((t, x) => new TextLoader.Column(t.Name, t.PropertyType == typeof(string) ? DataKind.Text : DataKind.R4, x)).ToArray();
+            return fields.Select((t, x) => new TextLoader.Column(t.Name, t.PropertyType == typeof(string) ? DataKind.String : DataKind.Single, x)).ToArray();
         }
 
         public static string[] ToColumnNames<T>(this T model)
