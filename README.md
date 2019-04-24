@@ -12,3 +12,17 @@ Blog Post: http://www.jarredcapellman.com/ml_net_with_sdca_and_predicting_turnov
 An experiment with PE32 File Classification (assuming it was malicious).
 
 Blog Post: http://www.jarredcapellman.com/ml_net_with_kmeans_clustering
+
+## Upcoming Deep Dives
+
+### Random File Classification
+An experiment that I am going to start for my DSc in Cybersecurity
+
+### Jpeg Artifact Detector
+Continuing my goal of upscaling
+
+### Binary Classifier
+A simple deep dive
+
+### Sentiment Analysis
+Reviews good/or bad
