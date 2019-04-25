@@ -9,7 +9,7 @@ using mldeepdivelib.Helpers;
 using mljpegartifactdetector.Structures;
 
 using Microsoft.ML;
-using Microsoft.ML.Data;
+using Microsoft.ML.Transforms;
 
 namespace mljpegartifactdetector
 {
@@ -43,15 +43,12 @@ namespace mljpegartifactdetector
         protected override void Train(string[] args)
         {
             var trainingDataView = MlContext.Data.LoadFromTextFile<JpegArtifactorDetectorData>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: true);
-            
-            var dataProcessPipeline = MlContext.Transforms.Conversion.MapValueToKey(
-                    outputColumnName: DefaultColumnNames.Label,
-                    inputColumnName: nameof(JpegArtifactorDetectorData.ContainsJpegArtifacts))
-                .Append(MlContext.Transforms.Text.FeaturizeText(outputColumnName: "DataFeaturized",
-                    inputColumnName: nameof(JpegArtifactorDetectorData.Data)))
-                .Append(MlContext.Transforms.Concatenate(DefaultColumnNames.Features,"DataFeaturized"));
-            
-            var trainer = MlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumnName: "Label", featureColumnName: "Data");
+
+            var dataProcessPipeline = MlContext.Transforms.Conversion.MapValueToKey("Label", "Number", 
+                    keyOrdinality: ValueToKeyMappingEstimator.KeyOrdinality.ByValue).
+                Append(MlContext.Transforms.Concatenate("Features", "DataFeaturized").AppendCacheCheckpoint(MlContext));
+
+            var trainer = MlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy(labelColumnName: "Label", featureColumnName: "Data");
             var trainingPipeline = dataProcessPipeline.Append(trainer);
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);

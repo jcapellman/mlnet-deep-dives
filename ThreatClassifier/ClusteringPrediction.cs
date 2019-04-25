@@ -27,13 +27,13 @@ namespace ThreatClassifier
                 .Concatenate(Constants.FEATURE_COLUMN_NAME, modelObject.ToColumnNames())
                 .Append(MlContext.Clustering.Trainers.KMeans(
                     Constants.FEATURE_COLUMN_NAME,
-                    clustersCount: Enum.GetNames(typeof(ThreatTypes)).Length));
+                    numberOfClusters: Enum.GetNames(typeof(ThreatTypes)).Length));
 
             var trainedModel = pipeline.Fit(dataView);
 
             using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
-                trainedModel.SaveTo(MlContext, fs);
+                MlContext.Model.Save(trainedModel, dataView.Schema, fs);
             }
 
             Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");

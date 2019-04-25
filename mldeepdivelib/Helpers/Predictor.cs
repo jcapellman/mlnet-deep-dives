@@ -12,10 +12,10 @@ namespace mldeepdivelib.Helpers
 
             using (var stream = new FileStream(modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                trainedModel = mlContext.Model.Load(stream);
+                trainedModel = mlContext.Model.Load(stream, out var modelInputSchema);
             }
 
-            var predFunction = trainedModel.CreatePredictionEngine<T, TK>(mlContext);
+            var predFunction = mlContext.Model.CreatePredictionEngine<T, TK>(trainedModel);
 
             return predFunction.Predict(predictionData);
         }

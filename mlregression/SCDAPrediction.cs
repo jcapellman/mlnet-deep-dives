@@ -1,15 +1,15 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 using mldeepdivelib.Abstractions;
-using mldeepdivelib.Common;
 using mldeepdivelib.Enums;
 using mldeepdivelib.Helpers;
 
 using mlregression.Structures;
 
 using Microsoft.ML;
-using Microsoft.ML.Transforms;
+using Microsoft.ML.Data;
 
 namespace mlregression
 {
@@ -19,36 +19,36 @@ namespace mlregression
         {
             var modelObject = Activator.CreateInstance<EmploymentHistory>();
 
-            var trainingDataView = MlContext.Data.LoadFromTextFile<EmploymentHistory>(args[(int) CommandLineArguments.INPUT_FILE]);
-            
-            var (name, min, max) = modelObject.GetLabelAttributes();
+            IDataView baseTrainingDataView = MlContext.Data.LoadFromTextFile<EmploymentHistory>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: true, separatorChar: ',');
+            var testDataView = MlContext.Data.LoadFromTextFile<EmploymentHistory>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: true, separatorChar: ',');
+            var cnt = baseTrainingDataView.GetColumn<float>(nameof(EmploymentHistory.DurationInMonths)).Count();
+            IDataView trainingDataView = MlContext.Data.FilterRowsByColumn(baseTrainingDataView, nameof(EmploymentHistory.DurationInMonths), lowerBound: 1, upperBound: 150);
+            var cnt2 = trainingDataView.GetColumn<float>(nameof(EmploymentHistory.DurationInMonths)).Count();
 
-            var testDataView = MlContext.BinaryClassification.TrainTestSplit(trainingDataView, testFraction: 0.1);
-
-            var dataProcessPipeline = MlContext.Transforms.CopyColumns("Label", name)
+            var dataProcessPipeline = MlContext.Transforms.CopyColumns("Label", nameof(EmploymentHistory.DurationInMonths))
                 .Append(MlContext.Transforms.Categorical.OneHotEncoding("PositionNameEncoded", "PositionName"))
-                .Append(MlContext.Transforms.Normalize("IsMarried", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("BSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("MSDegree", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("YearsExperience", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("AgeAtHire", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("HasKids", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("WithinMonthOfVesting", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("DeskDecorations", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Normalize("LongCommute", mode: NormalizingEstimator.NormalizerMode.MeanVariance))
-                .Append(MlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire", "HasKids", "WithinMonthOfVesting", "DeskDecorations", "LongCommute"));
+                .Append(MlContext.Transforms.NormalizeMeanVariance("IsMarried"))
+                .Append(MlContext.Transforms.NormalizeMeanVariance("BSDegree"))
+                .Append(MlContext.Transforms.NormalizeMeanVariance("MSDegree"))
+                .Append(MlContext.Transforms.NormalizeMeanVariance("YearsExperience")
+                .Append(MlContext.Transforms.NormalizeMeanVariance("AgeAtHire"))
+                .Append(MlContext.Transforms.NormalizeMeanVariance("HasKids"))
+                .Append(MlContext.Transforms.NormalizeMeanVariance("WithinMonthOfVesting"))
+                .Append(MlContext.Transforms.NormalizeMeanVariance("DeskDecorations"))
+                .Append(MlContext.Transforms.NormalizeMeanVariance("LongCommute"))
+                .Append(MlContext.Transforms.Concatenate("Features", "PositionNameEncoded", "IsMarried", "BSDegree", "MSDegree", "YearsExperience", "AgeAtHire", "HasKids", "WithinMonthOfVesting", "DeskDecorations", "LongCommute")));
 
-            var trainer = MlContext.Regression.Trainers.StochasticDualCoordinateAscent();
+            var trainer = MlContext.Regression.Trainers.Sdca(labelColumnName: "Label", featureColumnName: "Features");
             var trainingPipeline = dataProcessPipeline.Append(trainer);
 
             var trainedModel = trainingPipeline.Fit(trainingDataView);
 
-            var dataWithPredictions = trainedModel.Transform(testDataView.TestSet);
+            var dataWithPredictions = trainedModel.Transform(testDataView);
 
-            var metrics = MlContext.BinaryClassification.Evaluate(dataWithPredictions, predictedLabel: nameof(EmploymentHistoryPrediction.DurationInMonths));
+            var metrics = MlContext.BinaryClassification.Evaluate(dataWithPredictions, predictedLabelColumnName: nameof(EmploymentHistoryPrediction.DurationInMonths));
 
             Console.WriteLine($"Accuracy: {metrics.Accuracy}");
-            Console.WriteLine($"AUC: {metrics.Auc}");
+            Console.WriteLine($"AUC: {metrics.AreaUnderRocCurve}");
             Console.WriteLine($"F1 Score: {metrics.F1Score}");
 
             Console.WriteLine($"Negative Precision: {metrics.NegativePrecision}");
@@ -58,7 +58,7 @@ namespace mlregression
 
             using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
-                trainedModel.SaveTo(MlContext, fs);
+                MlContext.Model.Save(trainedModel, trainingDataView.Schema, fs);
             }
 
             Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");
