@@ -8,7 +8,6 @@ using mldeepdivelib.Helpers;
 using mlgoodreviewsentimentanalysis.Structures;
 
 using Microsoft.ML;
-using Microsoft.ML.Data;
 
 namespace mlgoodreviewsentimentanalysis
 {
@@ -17,8 +16,8 @@ namespace mlgoodreviewsentimentanalysis
         protected override void Train(string[] args)
         {
             var trainingDataView = MlContext.Data.LoadFromTextFile<SentimentData>(args[(int)CommandLineArguments.INPUT_FILE]);
-            
-            var pipeline = MlContext.Transforms.Text.FeaturizeText(DefaultColumnNames.Features, nameof(SentimentData.Text));
+
+            var pipeline = MlContext.Transforms.Text.FeaturizeText(outputColumnName: "Features", inputColumnName: nameof(SentimentData.Text));
 
             var trainer = MlContext.BinaryClassification.Trainers.FastTree();
             var trainingPipeline = pipeline.Append(trainer);
@@ -27,7 +26,7 @@ namespace mlgoodreviewsentimentanalysis
 
             using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
-                trainedModel.SaveTo(MlContext, fs);
+                MlContext.Model.Save(trainedModel, trainingDataView.Schema, fs);
             }
 
             Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");

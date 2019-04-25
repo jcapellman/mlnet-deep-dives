@@ -55,7 +55,7 @@ namespace mljpegartifactdetector
 
             using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
-                trainedModel.SaveTo(MlContext, fs);
+                MlContext.Model.Save(trainedModel, trainingDataView.Schema, fs);
             }
 
             Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");

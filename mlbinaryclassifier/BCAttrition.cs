@@ -18,13 +18,13 @@ namespace mlbinaryclassifier
             var baseTrainingDataView = MlContext.Data.LoadFromTextFile<BCData>(args[(int)CommandLineArguments.INPUT_FILE], hasHeader: true, separatorChar: ';');
            
             var pipeline = MlContext.Transforms.Text.FeaturizeText("Content", "Features")
-                .Append(MlContext.BinaryClassification.Trainers.FastTree(numLeaves: 2, numTrees: 10, minDatapointsInLeaves: 1));
+                .Append(MlContext.BinaryClassification.Trainers.FastTree(numberOfLeaves: 2, numberOfTrees: 10, minimumExampleCountPerLeaf: 1));
 
             var trainedModel = pipeline.Fit(baseTrainingDataView);
 
             using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
-                trainedModel.SaveTo(MlContext, fs);
+                MlContext.Model.Save(trainedModel, baseTrainingDataView.Schema, fs);
             }
 
             Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");

@@ -11,7 +11,6 @@ using mldeepdivelib.Helpers;
 using ml_random_file_classification.Structures;
 
 using Microsoft.ML;
-using Microsoft.ML.Data;
 
 namespace ml_random_file_classification
 {
@@ -21,7 +20,7 @@ namespace ml_random_file_classification
         {
             var data = MlContext.Data.LoadFromTextFile<FileData>(path: args[(int)CommandLineArguments.INPUT_FILE]);
 
-            var pipeline = MlContext.Transforms.Text.FeaturizeText(DefaultColumnNames.Features, nameof(FileData.Strings));
+            var pipeline = MlContext.Transforms.Text.FeaturizeText(outputColumnName: "Features", inputColumnName: nameof(FileData.Strings));
 
             var trainer = MlContext.BinaryClassification.Trainers.FastTree();
             var trainingPipeline = pipeline.Append(trainer);
@@ -30,7 +29,7 @@ namespace ml_random_file_classification
 
             using (var fs = File.Create(args[(int)CommandLineArguments.OUTPUT_FILE]))
             {
-                trainedModel.SaveTo(MlContext, fs);
+                MlContext.Model.Save(trainedModel, data.Schema, fs);
             }
 
             Console.WriteLine($"Saved model to {args[(int)CommandLineArguments.OUTPUT_FILE]}");
